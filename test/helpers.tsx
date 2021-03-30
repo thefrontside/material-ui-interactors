@@ -22,3 +22,10 @@ export function render(element: ReactElement) {
     }
   );
 }
+
+export function isHTMLElement(element?: Element | null): element is HTMLElement {
+  return (
+    element?.ownerDocument.defaultView?.HTMLElement != undefined &&
+    element instanceof element.ownerDocument.defaultView?.HTMLElement
+  );
+}
