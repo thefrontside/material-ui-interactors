@@ -1,7 +1,12 @@
-import { HTML } from "bigtest";
+import { createInteractor, HTML } from "bigtest";
 import { isHTMLElement } from "../test/helpers";
 
 function getHeaderElement(element: HTMLElement) {
+  const header = element.parentElement?.querySelector(".MuiPickersCalendarHeader-switchHeader");
+  return isHTMLElement(header) ? header : null;
+}
+
+function getTitleElement(element: HTMLElement) {
   const header = element.parentElement?.querySelector(".MuiPickersCalendarHeader-transitionContainer");
   return isHTMLElement(header) ? header : null;
 }
@@ -15,15 +20,16 @@ function getSelectedElement(element: HTMLElement) {
   const dayButton = element.querySelector(".MuiPickersDay-daySelected");
   return isHTMLElement(dayButton) ? dayButton : null;
 }
-export const Calendar = HTML.extend("MUI Calendar")
+
+export const Calendar = createInteractor<HTMLElement>("MUI Calendar")
   .selector(".MuiPickersCalendar-transitionContainer")
   .locator((element) => {
-    const header = getHeaderElement(element)?.innerText;
+    const header = getTitleElement(element)?.innerText;
     const selectedDay = getSelectedElement(element)?.innerText;
     return [selectedDay, header].filter(Boolean).join(" ");
   })
   .filters({
-    header: (element) => getHeaderElement(element)?.innerText,
+    title: (element) => getTitleElement(element)?.innerText,
     selectedDay: (element) => {
       const text = getSelectedElement(element)?.innerText;
       const day = text ? parseInt(text) : NaN;
@@ -39,7 +45,17 @@ export const Calendar = HTML.extend("MUI Calendar")
     },
   })
   .actions({
-    // TODO nextMonth
-    // TODO prevMonth
-    // TODO selectDay
+    nextMonth: ({ perform }) =>
+      perform((element) => {
+        // NOTE: We can't go upwards by using `Interactor().find(...)`
+        const nextMonthElement = getHeaderElement(element)?.lastElementChild;
+        if (isHTMLElement(nextMonthElement)) nextMonthElement.click();
+      }),
+    prevMonth: ({ perform }) =>
+      perform((element) => {
+        // NOTE: We can't go upwards by using `Interactor().find(...)`
+        const prevMonthElement = getHeaderElement(element)?.firstElementChild;
+        if (isHTMLElement(prevMonthElement)) prevMonthElement.click();
+      }),
+    selectDay: (interactor, day: number) => interactor.find(HTML.selector(".MuiPickersDay-day")(String(day))).click(),
   });
