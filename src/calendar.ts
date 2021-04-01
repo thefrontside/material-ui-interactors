@@ -1,4 +1,4 @@
-import { createInteractor, HTML } from "bigtest";
+import { createInteractor, HTML, including, not } from "bigtest";
 import { isHTMLElement } from "../test/helpers";
 
 function getHeaderElement(element: HTMLElement) {
@@ -57,5 +57,18 @@ export const Calendar = createInteractor<HTMLElement>("MUI Calendar")
         const prevMonthElement = getHeaderElement(element)?.firstElementChild;
         if (isHTMLElement(prevMonthElement)) prevMonthElement.click();
       }),
-    selectDay: (interactor, day: number) => interactor.find(HTML.selector(".MuiPickersDay-day")(String(day))).click(),
+    selectDay: async (interactor, day: number) => {
+      const dayInteractor = await interactor.find(
+        HTML.selector(".MuiPickersCalendar-week > [role='presentation']")(String(day))
+      );
+      // TODO We need better message for that
+      // await dayInteractor.has({ className: not(including("MuiPickersDay-dayDisabled")) });
+      // Instead of
+      /*
+        │ ╒═ Filter:   className
+        │ ├─ Expected: not including "MuiPickersDay-dayDisabled"
+        │ └─ Received: "MuiButtonBase-root MuiIconButton-root MuiPickersDay-day MuiPickersDay-dayDisabled"
+      */
+      await dayInteractor.click();
+    },
   });
