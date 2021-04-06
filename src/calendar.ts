@@ -1,4 +1,4 @@
-import { createInteractor, HTML, including, not } from "bigtest";
+import { createInteractor, HTML, Interactor } from "bigtest";
 import { isHTMLElement } from "../test/helpers";
 
 function getHeaderElement(element: HTMLElement) {
@@ -21,6 +21,23 @@ function getSelectedElement(element: HTMLElement) {
   return isHTMLElement(dayButton) ? dayButton : null;
 }
 
+export const getMonth = (element: HTMLElement) => getTitleElement(element)?.innerText.replace(/\s[0-9]{4}$/, "");
+export const getYear = (element: HTMLElement) => getTitleElement(element)?.innerText.replace(/.*\s([0-9]{4})$/, "$1");
+
+function getCurrentMonth(interactor: Interactor<HTMLElement, any>) {
+  return new Promise((resolve) => interactor.perform((element) => resolve(getMonth(element))));
+}
+function getCurrentYear(interactor: Interactor<HTMLElement, any>) {
+  return new Promise((resolve) =>
+    interactor.perform((element) => {
+      const yearString = getYear(element);
+      const year = yearString ? parseInt(yearString) : NaN;
+      resolve(Number.isNaN(year) ? undefined : year);
+    })
+  );
+}
+
+// TODO How do you think, do we need some actions/filters from the HTML interactor?
 export const Calendar = createInteractor<HTMLElement>("MUI Calendar")
   .selector(".MuiPickersCalendar-transitionContainer")
   .locator((element) => {
@@ -29,6 +46,8 @@ export const Calendar = createInteractor<HTMLElement>("MUI Calendar")
     return [selectedDay, header].filter(Boolean).join(" ");
   })
   .filters({
+    month: getMonth,
+    year: getYear,
     title: (element) => getTitleElement(element)?.innerText,
     selectedDay: (element) => {
       const text = getSelectedElement(element)?.innerText;
@@ -57,8 +76,53 @@ export const Calendar = createInteractor<HTMLElement>("MUI Calendar")
         const prevMonthElement = getHeaderElement(element)?.firstElementChild;
         if (isHTMLElement(prevMonthElement)) prevMonthElement.click();
       }),
-    selectDay: async (interactor, day: number) => {
-      const dayInteractor = await interactor.find(
+    setMonth: async (interactor, targetMonth: string) => {
+      //@ts-expect-error
+      let directions = [() => interactor.prevMonth(), () => interactor.nextMonth()];
+      directions = Math.round(Math.random()) ? directions : directions.reverse();
+      let currentMonth = await getCurrentMonth(interactor);
+      let currentYear = await getCurrentYear(interactor);
+
+      if (!currentMonth || !currentYear) return; // NOTE: Do we need throw error from here?
+      if (currentMonth == targetMonth) return;
+
+      const targetYear = currentYear;
+      let direction = directions.shift();
+      while (currentYear != targetYear || currentMonth != targetMonth) {
+        if (!direction)
+          throw new Error(
+            `Can't set '${targetMonth}' month. It might happened because of 'minDate/maxDate' or 'disableFuture/disablePast' props`
+          );
+        await direction();
+        const prevMonth = currentMonth;
+        currentMonth = await getCurrentMonth(interactor);
+        currentYear = await getCurrentYear(interactor);
+        if ((currentMonth == targetMonth && currentYear != targetYear) || currentMonth == prevMonth)
+          direction = directions.shift();
+      }
+    },
+    setYear: async (interactor, targetYear: number) => {
+      let currentMonth = await getCurrentMonth(interactor);
+      let currentYear = await getCurrentYear(interactor);
+
+      if (!currentMonth || !currentYear) return; // NOTE: Do we need throw error from here?
+      if (currentYear == targetYear) return;
+      //@ts-expect-error
+      const step = currentYear < targetYear ? () => interactor.nextMonth() : () => interactor.prevMonth();
+      const targetMonth = currentMonth;
+      while (currentYear != targetYear || currentMonth != targetMonth) {
+        await step();
+        const prevMonth = currentMonth;
+        currentMonth = await getCurrentMonth(interactor);
+        currentYear = await getCurrentYear(interactor);
+        if (prevMonth == currentMonth)
+          throw new Error(
+            `Can't set '${targetYear}' year. It might happened because of 'minDate/maxDate' or 'disableFuture/disablePast' props`
+          );
+      }
+    },
+    selectDay: (interactor, day: number) => {
+      const dayInteractor = interactor.find(
         HTML.selector(".MuiPickersCalendar-week > [role='presentation']")(String(day))
       );
       // TODO We need better message for that
@@ -69,6 +133,6 @@ export const Calendar = createInteractor<HTMLElement>("MUI Calendar")
         │ ├─ Expected: not including "MuiPickersDay-dayDisabled"
         │ └─ Received: "MuiButtonBase-root MuiIconButton-root MuiPickersDay-day MuiPickersDay-dayDisabled"
       */
-      await dayInteractor.click();
+      return dayInteractor.click();
     },
   });

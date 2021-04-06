@@ -1,31 +1,10 @@
-import "date-fns";
-import { cloneElement, ComponentProps, createElement, PropsWithChildren, useState } from "react";
+import { cloneElement } from "react";
 import { test, Page } from "bigtest";
-import { Calendar as Component, MuiPickersUtilsProvider } from "@material-ui/pickers";
-import DateFnsUtils from "@date-io/date-fns";
+import { Calendar as Component } from "@material-ui/pickers";
 import { Calendar } from "../src";
-import { render } from "./helpers";
+import { getPickerRenderer } from "./helpers";
 
-const renderComponent = (
-  getProps?:
-    | Partial<ComponentProps<typeof Component>>
-    | ((onChange?: (date: Date) => void) => Partial<ComponentProps<typeof Component>>)
-) => () =>
-  render(
-    createElement(() => {
-      const props = typeof getProps == "function" ? getProps() : getProps;
-      const [selectedDate, setSelectedDate] = useState<Date | null>(props?.date ?? new Date("2014-08-18"));
-      return (
-        <MuiPickersUtilsProvider utils={DateFnsUtils}>
-          <Component
-            onChange={setSelectedDate}
-            date={selectedDate}
-            {...(typeof getProps == "function" ? getProps(setSelectedDate) : getProps)}
-          />
-        </MuiPickersUtilsProvider>
-      );
-    })
-  );
+const renderComponent = getPickerRenderer(Component);
 
 export default test("Calendar")
   .step(Page.visit("/"))
@@ -34,6 +13,12 @@ export default test("Calendar")
   )
   .child("filter by title", (test) =>
     test.step("render", renderComponent()).assertion(Calendar({ title: "August 2014" }).exists())
+  )
+  .child("filter by month", (test) =>
+    test.step("render", renderComponent()).assertion(Calendar({ month: "August" }).exists())
+  )
+  .child("filter by year", (test) =>
+    test.step("render", renderComponent()).assertion(Calendar({ year: "2014" }).exists())
   )
   .child("filter by selectedDay", (test) =>
     test.step("render", renderComponent()).assertion(Calendar({ selectedDay: 18 }).exists())
@@ -53,6 +38,41 @@ export default test("Calendar")
       .step("go to prev month", () => Calendar().prevMonth())
       .assertion(Calendar().has({ title: "July 2014" }))
   )
+  // TODO Add tests with min/max date
+  // TODO Don't work
+  // │ Unknown error occurred: This is likely a bug in BigTest and should be reported at https://github.com/thefrontside/bigtest/issues.
+  // .child("setMonth action", (test) =>
+  //   test
+  //     .child("in future", (test) =>
+  //       test
+  //         .step("render", renderComponent())
+  //         .step("go to September", () => Calendar().setMonth("September"))
+  //         .assertion(Calendar().has({ title: "September 2015" }))
+  //     )
+  //     .child("in past", (test) =>
+  //       test
+  //         .step("render", renderComponent())
+  //         .step("go to July", () => Calendar().setMonth("July"))
+  //         .assertion(Calendar().has({ title: "July 2013" }))
+  //     )
+  // )
+  // TODO Don't work
+  // │ Unknown error occurred: This is likely a bug in BigTest and should be reported at https://github.com/thefrontside/bigtest/issues.
+  // .child("setYear action", (test) =>
+  //   test
+  //     .child("in future", (test) =>
+  //       test
+  //         .step("render", renderComponent())
+  //         .step("go to 2015", () => Calendar().setYear(2015))
+  //         .assertion(Calendar().has({ title: "August 2015" }))
+  //     )
+  //     .child("in past", (test) =>
+  //       test
+  //         .step("render", renderComponent())
+  //         .step("go to 2013", () => Calendar().setYear(2013))
+  //         .assertion(Calendar().has({ title: "August 2013" }))
+  //     )
+  // )
   .child("selectDay action", (test) =>
     test
       .step("render", renderComponent())
@@ -123,3 +143,6 @@ export default test("Calendar")
       .step("go to prev month", () => Calendar().prevMonth())
       .assertion(Calendar().has({ title: "July 2014" }))
   );
+
+// TODO SetMonth, try to go next/prev month until wanted month, check year. If we went in wrong direction, go back
+// TODO SetYear because we know current year
