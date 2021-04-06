@@ -20,9 +20,7 @@ export default test("Calendar")
   .child("filter by year", (test) =>
     test.step("render", renderComponent()).assertion(Calendar({ year: "2014" }).exists())
   )
-  .child("filter by selectedDay", (test) =>
-    test.step("render", renderComponent()).assertion(Calendar({ selectedDay: 18 }).exists())
-  )
+  .child("filter by day", (test) => test.step("render", renderComponent()).assertion(Calendar({ day: 18 }).exists()))
   .child("filter by weekDay", (test) =>
     test.step("render", renderComponent()).assertion(Calendar({ weekDay: "Mo" }).exists())
   )
@@ -73,15 +71,15 @@ export default test("Calendar")
   //         .assertion(Calendar().has({ title: "August 2013" }))
   //     )
   // )
-  .child("selectDay action", (test) =>
+  .child("setDay action", (test) =>
     test
       .step("render", renderComponent())
-      .step("select the 15th day", () => Calendar().selectDay(15))
+      .step("select the 15th day", () => Calendar().setDay(15))
       .assertion(Calendar("15 August 2014").exists())
   )
   // TODO What should do if user want to click on the disabled `nextMonth` button? Raise exception? Do nothing?
   // TODO How to test an exception with BigTest?
-  // TODO The same for `prevMonth` and `selectDay` and `shouldDisableDate`
+  // TODO The same for `prevMonth` and `setDay` and `shouldDisableDate`
   // TODO Props to test `disableFuture`, `disablePast`, `maxDate`, `minDate`
   // .child("nextMonth action with disableFuture", (test) =>
   //   test
@@ -89,14 +87,14 @@ export default test("Calendar")
   //     .step("try go to next month", () => Calendar().nextMonth())
   //     .assertion(Calendar().has({ title: "???" }))
   // )
-  .child("selectDay action on disabled day", (test) =>
+  .child("setDay action on disabled day", (test) =>
     test
       .step("render", renderComponent({ maxDate: new Date("2014-08-18") }))
-      .step("select the 20th day", () => Calendar().selectDay(20))
+      .step("select the 20th day", () => Calendar().setDay(20))
       // TODO Test exception message?
       .assertion(Calendar("18 August 2014").exists())
   )
-  .child("selectDay action with fully custom day render", (test) =>
+  .child("setDay action with fully custom day render", (test) =>
     test
       .step(
         "render",
@@ -106,13 +104,13 @@ export default test("Calendar")
           ),
         })
       )
-      .step("select the 20th day", () => Calendar().selectDay(20))
+      .step("select the 20th day", () => Calendar().setDay(20))
       // NOTE There is no way to filter by selected day with a fully custom day render
       // But we still be able do day clicks, just can't test it ¯\_(ツ)_/¯
       .assertion(Calendar("August 2014").exists())
   )
   .child(
-    "selectDay action with 'semi-transparent' days",
+    "setDay action with 'semi-transparent' days",
     (test) =>
       test.step(
         "render",
@@ -128,7 +126,7 @@ export default test("Calendar")
         }))
       )
     // TODO But 4th day appears twice :(
-    // .step("select the 4th day", () => Calendar().selectDay(4))
+    // .step("select the 4th day", () => Calendar().setDay(4))
     // .assertion(Calendar("4 September 2014").exists())
   )
   .child("nextMonth action with custom icon", (test) =>
@@ -143,6 +141,3 @@ export default test("Calendar")
       .step("go to prev month", () => Calendar().prevMonth())
       .assertion(Calendar().has({ title: "July 2014" }))
   );
-
-// TODO SetMonth, try to go next/prev month until wanted month, check year. If we went in wrong direction, go back
-// TODO SetYear because we know current year
