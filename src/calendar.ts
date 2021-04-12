@@ -144,9 +144,4 @@ export const Calendar = createInteractor<HTMLElement>("MUI Calendar")
     setYear: goToYear,
     setMonth: goToMonth,
     setDay: goToDay,
-    setDate: async (interactor, targetDate: { day: number; month: string; year: number }) => {
-      await goToYear(interactor, targetDate.year);
-      await goToMonth(interactor, targetDate.month);
-      await goToDay(interactor, targetDate.day);
-    },
   });

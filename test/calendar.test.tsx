@@ -71,12 +71,6 @@ export default test("Calendar")
       .step("select the 15th day", () => Calendar().setDay(15))
       .assertion(Calendar("15 August 2014").exists())
   )
-  .child("setDate action", (test) =>
-    test
-      .step("render", renderComponent())
-      .step("set date 23 May 2016", () => Calendar().setDate({ day: 23, month: "May", year: 2016 }))
-      .assertion(Calendar("23 May 2016").exists())
-  )
   // TODO What should do if user want to click on the disabled `nextMonth` button? Raise exception? Do nothing?
   // TODO How to test an exception with BigTest?
   // TODO The same for `prevMonth` and `setDay` and `shouldDisableDate`
