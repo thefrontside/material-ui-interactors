@@ -1,9 +1,11 @@
 import { test, Page } from "bigtest";
 import { Calendar as Component } from "@material-ui/pickers";
-import { Calendar } from "../src";
+import { Calendar, getCalendar } from "../src";
 import { getPickerRenderer } from "./helpers";
+import DateFnsUtils from "@date-io/date-fns";
 
 const renderComponent = getPickerRenderer(Component);
+const CalendarWithUtils = getCalendar(new DateFnsUtils());
 
 export default test("Calendar")
   .step(Page.visit("/"))
@@ -23,6 +25,15 @@ export default test("Calendar")
   .child("filter by weekDay", (test) =>
     test.step("render", renderComponent()).assertion(Calendar({ weekDay: "Mo" }).exists())
   )
+  // NOTE: Doesn't work
+  // │ ERROR did not find MUI Calendar with date "2014-08-18T00:00:00.000Z", did you mean one of:
+  // │
+  // │ ┃ date: "2014-08-18T00:00:00.000Z" ┃
+  // │ ┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
+  // │ ┃ ⨯ "2014-08-18T22:00:00.000Z"     ┃
+  // .child("filter by date", (test) =>
+  //   test.step("render", renderComponent()).assertion(CalendarWithUtils({ date: new Date("2014-08-18") }).exists())
+  // )
   .child("nextMonth action", (test) =>
     test
       .step("render", renderComponent())
@@ -62,6 +73,21 @@ export default test("Calendar")
         test
           .step("render", renderComponent())
           .step("go to July", () => Calendar().setMonth("July"))
+          .assertion(Calendar().has({ title: "July 2014" }))
+      )
+  )
+  .child("setMonth action with utils", (test) =>
+    test
+      .child("in future", (test) =>
+        test
+          .step("render", renderComponent())
+          .step("go to September", () => CalendarWithUtils().setMonth("September"))
+          .assertion(Calendar().has({ title: "September 2014" }))
+      )
+      .child("in past", (test) =>
+        test
+          .step("render", renderComponent())
+          .step("go to July", () => CalendarWithUtils().setMonth("July"))
           .assertion(Calendar().has({ title: "July 2014" }))
       )
   )

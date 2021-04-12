@@ -1,4 +1,5 @@
-import { createInteractor, HTML, including, Interactor, not } from "bigtest";
+import { useUtils } from "@material-ui/pickers";
+import { createInteractor, HTML, including, Interaction, Interactor, not } from "bigtest";
 import { isHTMLElement } from "../test/helpers";
 import { delay } from "./helpers";
 
@@ -20,6 +21,12 @@ function getWeekDaysElement(element: HTMLElement) {
 function getSelectedElement(element: HTMLElement) {
   const dayButton = element.querySelector(".MuiPickersDay-daySelected");
   return isHTMLElement(dayButton) ? dayButton : null;
+}
+
+function calendarLocator(element: HTMLElement) {
+  const header = getTitleElement(element)?.innerText;
+  const selectedDay = getSelectedElement(element)?.innerText;
+  return [selectedDay, header].filter(Boolean).join(" ");
 }
 
 export const getMonth = (element: HTMLElement) => getTitleElement(element)?.innerText.replace(/\s[0-9]{4}$/, "");
@@ -75,28 +82,28 @@ async function goToYear(interactor: Interactor<HTMLElement, any>, targetYear: nu
       );
   }
 }
-async function goToMonth(interactor: Interactor<HTMLElement, any>, targetMonth: string) {
-  let directions = [() => goToPrevMonth(interactor), () => goToNextMonth(interactor)];
-  directions = Math.round(Math.random()) ? directions : directions.reverse();
+async function goToMonth(
+  interactor: Interactor<HTMLElement, any>,
+  targetMonth: string,
+  directionStep: () => Interaction<void>,
+  currentYear?: number
+) {
   let currentMonth = await getCurrentMonth(interactor);
-  let currentYear = await getCurrentYear(interactor);
 
   if (!currentMonth || !currentYear) throw new Error("Can't get current month and year");
   if (currentMonth == targetMonth) return;
 
   const targetYear = currentYear;
-  let directionStep = directions.shift();
   while (currentYear != targetYear || currentMonth != targetMonth) {
-    if (!directionStep)
+    await directionStep();
+    await delay(1000);
+    const prevMonth: string | undefined = currentMonth;
+    currentMonth = await getCurrentMonth(interactor);
+    currentYear = await getCurrentYear(interactor);
+    if (currentYear != targetYear || currentMonth == prevMonth)
       throw new Error(
         `Can't set '${targetMonth}' month. It might happened because of 'minDate/maxDate' or 'disableFuture/disablePast' props`
       );
-    await directionStep();
-    await delay(1000);
-    const prevMonth = currentMonth;
-    currentMonth = await getCurrentMonth(interactor);
-    currentYear = await getCurrentYear(interactor);
-    if (currentYear != targetYear || currentMonth == prevMonth) directionStep = directions.shift();
   }
 }
 async function goToDay(interactor: Interactor<HTMLElement, any>, day: number) {
@@ -113,13 +120,33 @@ async function goToDay(interactor: Interactor<HTMLElement, any>, day: number) {
   return dayInteractor.click();
 }
 
+export const getCalendar = (utils: ReturnType<typeof useUtils>) =>
+  Calendar.filters({
+    date: (element) => {
+      const header = getTitleElement(element)?.innerText;
+      const selectedDay = getSelectedElement(element)?.innerText;
+      const monthAndYear = header ? utils.parse(header, "MMMM yyyy") : new Date();
+      return selectedDay ? utils.addDays(monthAndYear, parseInt(selectedDay)) : monthAndYear;
+    },
+  }).actions({
+    setMonth: async (interactor: Interactor<HTMLElement, any>, targetMonth: string) => {
+      let currentMonth = await getCurrentMonth(interactor);
+      if (!currentMonth) throw new Error("Can't get current month");
+      const currentMonthNumber = utils.getMonth(utils.parse(currentMonth, "MMMM"));
+      const targetMonthNumber = utils.getMonth(utils.parse(targetMonth, "MMMM"));
+      if (currentMonthNumber == targetMonthNumber) return;
+      await goToMonth(
+        interactor,
+        targetMonth,
+        currentMonthNumber < targetMonthNumber ? () => goToNextMonth(interactor) : () => goToPrevMonth(interactor),
+        await getCurrentYear(interactor)
+      );
+    },
+  });
+
 export const Calendar = createInteractor<HTMLElement>("MUI Calendar")
   .selector(".MuiPickersCalendar-transitionContainer")
-  .locator((element) => {
-    const header = getTitleElement(element)?.innerText;
-    const selectedDay = getSelectedElement(element)?.innerText;
-    return [selectedDay, header].filter(Boolean).join(" ");
-  })
+  .locator(calendarLocator)
   .filters({
     year: getYear,
     month: getMonth,
@@ -142,6 +169,19 @@ export const Calendar = createInteractor<HTMLElement>("MUI Calendar")
     nextMonth: goToNextMonth,
     prevMonth: goToPrevMonth,
     setYear: goToYear,
-    setMonth: goToMonth,
+    setMonth: async (interactor: Interactor<HTMLElement, any>, targetMonth: string) => {
+      const currentYear = await getCurrentYear(interactor);
+
+      let directions = [() => goToPrevMonth(interactor), () => goToNextMonth(interactor)];
+      directions = Math.round(Math.random()) ? directions : directions.reverse();
+      let directionStep = directions.shift() as () => Interaction<void>;
+
+      try {
+        await goToMonth(interactor, targetMonth, directionStep, currentYear);
+      } catch (_) {
+        directionStep = directions.shift() as () => Interaction<void>;
+        await goToMonth(interactor, targetMonth, directionStep, currentYear);
+      }
+    },
     setDay: goToDay,
   });
