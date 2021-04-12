@@ -8,8 +8,8 @@ import { MuiPickersUtilsProvider } from "@material-ui/pickers";
 import DateFnsUtils from "@date-io/date-fns";
 
 export function render(element: ReactElement) {
-  let insertion = bigtestGlobals.document.createComment("mui-jss-insertion");
-  let insertionPoint = bigtestGlobals.document.head.insertBefore(insertion, bigtestGlobals.document.head.firstChild);
+  let insertion = document.createComment("mui-jss-insertion");
+  let insertionPoint = document.head.insertBefore(insertion, document.head.firstChild);
   const jss = create({
     ...jssPreset(),
     // Define a custom insertion point that JSS will look for when injecting the styles into the DOM.
@@ -21,7 +21,7 @@ export function render(element: ReactElement) {
       {element}
     </StylesProvider>,
     {
-      container: bigtestGlobals.document.body,
+      container: document.body,
     }
   );
 }
