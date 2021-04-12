@@ -1,4 +1,3 @@
-import { cloneElement } from "react";
 import { test, Page } from "bigtest";
 import { Calendar as Component } from "@material-ui/pickers";
 import { Calendar } from "../src";
@@ -36,46 +35,47 @@ export default test("Calendar")
       .step("go to prev month", () => Calendar().prevMonth())
       .assertion(Calendar().has({ title: "July 2014" }))
   )
-  // TODO Add tests with min/max date
-  // TODO Don't work
-  // │ Unknown error occurred: This is likely a bug in BigTest and should be reported at https://github.com/thefrontside/bigtest/issues.
-  // .child("setMonth action", (test) =>
-  //   test
-  //     .child("in future", (test) =>
-  //       test
-  //         .step("render", renderComponent())
-  //         .step("go to September", () => Calendar().setMonth("September"))
-  //         .assertion(Calendar().has({ title: "September 2015" }))
-  //     )
-  //     .child("in past", (test) =>
-  //       test
-  //         .step("render", renderComponent())
-  //         .step("go to July", () => Calendar().setMonth("July"))
-  //         .assertion(Calendar().has({ title: "July 2013" }))
-  //     )
-  // )
-  // TODO Don't work
-  // │ Unknown error occurred: This is likely a bug in BigTest and should be reported at https://github.com/thefrontside/bigtest/issues.
-  // .child("setYear action", (test) =>
-  //   test
-  //     .child("in future", (test) =>
-  //       test
-  //         .step("render", renderComponent())
-  //         .step("go to 2015", () => Calendar().setYear(2015))
-  //         .assertion(Calendar().has({ title: "August 2015" }))
-  //     )
-  //     .child("in past", (test) =>
-  //       test
-  //         .step("render", renderComponent())
-  //         .step("go to 2013", () => Calendar().setYear(2013))
-  //         .assertion(Calendar().has({ title: "August 2013" }))
-  //     )
-  // )
+  .child("setYear action", (test) =>
+    test
+      .child("in future", (test) =>
+        test
+          .step("render", renderComponent())
+          .step("go to 2015", () => Calendar().setYear(2015))
+          .assertion(Calendar().has({ title: "August 2015" }))
+      )
+      .child("in past", (test) =>
+        test
+          .step("render", renderComponent())
+          .step("go to 2013", () => Calendar().setYear(2013))
+          .assertion(Calendar().has({ title: "August 2013" }))
+      )
+  )
+  .child("setMonth action", (test) =>
+    test
+      .child("in future", (test) =>
+        test
+          .step("render", renderComponent())
+          .step("go to September", () => Calendar().setMonth("September"))
+          .assertion(Calendar().has({ title: "September 2014" }))
+      )
+      .child("in past", (test) =>
+        test
+          .step("render", renderComponent())
+          .step("go to July", () => Calendar().setMonth("July"))
+          .assertion(Calendar().has({ title: "July 2014" }))
+      )
+  )
   .child("setDay action", (test) =>
     test
       .step("render", renderComponent())
       .step("select the 15th day", () => Calendar().setDay(15))
       .assertion(Calendar("15 August 2014").exists())
+  )
+  .child("setDate action", (test) =>
+    test
+      .step("render", renderComponent())
+      .step("set date 23 May 2016", () => Calendar().setDate({ day: 23, month: "May", year: 2016 }))
+      .assertion(Calendar("23 May 2016").exists())
   )
   // TODO What should do if user want to click on the disabled `nextMonth` button? Raise exception? Do nothing?
   // TODO How to test an exception with BigTest?
@@ -87,13 +87,13 @@ export default test("Calendar")
   //     .step("try go to next month", () => Calendar().nextMonth())
   //     .assertion(Calendar().has({ title: "???" }))
   // )
-  .child("setDay action on disabled day", (test) =>
-    test
-      .step("render", renderComponent({ maxDate: new Date("2014-08-18") }))
-      .step("select the 20th day", () => Calendar().setDay(20))
-      // TODO Test exception message?
-      .assertion(Calendar("18 August 2014").exists())
-  )
+  // TODO Test exception message?
+  // .child("setDay action on disabled day", (test) =>
+  //   test
+  //     .step("render", renderComponent({ maxDate: new Date("2014-08-18") }))
+  //     .step("select the 20th day", () => Calendar().setDay(20))
+  //     .assertion(Calendar("18 August 2014").exists())
+  // )
   .child("setDay action with fully custom day render", (test) =>
     test
       .step(
@@ -109,26 +109,26 @@ export default test("Calendar")
       // But we still be able do day clicks, just can't test it ¯\_(ツ)_/¯
       .assertion(Calendar("August 2014").exists())
   )
-  .child(
-    "setDay action with 'semi-transparent' days",
-    (test) =>
-      test.step(
-        "render",
-        // NOTE: Another `cool` thing we can render days from prev/next months and they are clickable
-        renderComponent((onChange) => ({
-          renderDay: (day, _selectedDate, dayInCurrentMonth, dayComponent) =>
-            cloneElement(dayComponent, {
-              hidden: false,
-              ...(dayInCurrentMonth
-                ? undefined
-                : { style: { opacity: "0.5" }, onClick: () => onChange?.(day as Date) }),
-            }),
-        }))
-      )
-    // TODO But 4th day appears twice :(
-    // .step("select the 4th day", () => Calendar().setDay(4))
-    // .assertion(Calendar("4 September 2014").exists())
-  )
+  // TODO But 4th day appears twice :(
+  // .child(
+  //   "setDay action with 'semi-transparent' days",
+  //   (test) =>
+  //     test.step(
+  //       "render",
+  //       // NOTE: Another `cool` thing we can render days from prev/next months and they are clickable
+  //       renderComponent((onChange) => ({
+  //         renderDay: (day, _selectedDate, dayInCurrentMonth, dayComponent) =>
+  //           cloneElement(dayComponent, {
+  //             hidden: false,
+  //             ...(dayInCurrentMonth
+  //               ? undefined
+  //               : { style: { opacity: "0.5" }, onClick: () => onChange?.(day as Date) }),
+  //           }),
+  //       }))
+  //     )
+  //   // .step("select the 4th day", () => Calendar().setDay(4))
+  //   // .assertion(Calendar("4 September 2014").exists())
+  // )
   .child("nextMonth action with custom icon", (test) =>
     test
       .step("render", renderComponent({ rightArrowIcon: <span /> }))

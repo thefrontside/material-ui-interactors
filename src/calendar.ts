@@ -1,5 +1,6 @@
-import { createInteractor, HTML, Interactor } from "bigtest";
+import { createInteractor, HTML, including, Interactor, not } from "bigtest";
 import { isHTMLElement } from "../test/helpers";
+import { delay } from "./helpers";
 
 function getHeaderElement(element: HTMLElement) {
   const header = element.parentElement?.querySelector(".MuiPickersCalendarHeader-switchHeader");
@@ -25,15 +26,18 @@ export const getMonth = (element: HTMLElement) => getTitleElement(element)?.inne
 export const getYear = (element: HTMLElement) => getTitleElement(element)?.innerText.replace(/.*\s([0-9]{4})$/, "$1");
 
 function getCurrentMonth(interactor: Interactor<HTMLElement, any>) {
-  return new Promise<string | undefined>((resolve) => interactor.perform((element) => resolve(getMonth(element))));
+  return new Promise<string | undefined>(
+    async (resolve) => await interactor.perform((element) => resolve(getMonth(element)))
+  );
 }
 function getCurrentYear(interactor: Interactor<HTMLElement, any>) {
-  return new Promise<number | undefined>((resolve) =>
-    interactor.perform((element) => {
-      const yearString = getYear(element);
-      const year = yearString ? parseInt(yearString) : NaN;
-      resolve(Number.isNaN(year) ? undefined : year);
-    })
+  return new Promise<number | undefined>(
+    async (resolve) =>
+      await interactor.perform((element) => {
+        const yearString = getYear(element);
+        const year = yearString ? parseInt(yearString) : NaN;
+        resolve(Number.isNaN(year) ? undefined : year);
+      })
   );
 }
 function goToNextMonth({ perform }: Interactor<HTMLElement, any>) {
@@ -61,6 +65,7 @@ async function goToYear(interactor: Interactor<HTMLElement, any>, targetYear: nu
   const targetMonth = currentMonth;
   while (currentYear != targetYear || currentMonth != targetMonth) {
     await step();
+    await delay(1000);
     const prevMonth: string | undefined = currentMonth;
     currentMonth = await getCurrentMonth(interactor);
     currentYear = await getCurrentYear(interactor);
@@ -80,24 +85,25 @@ async function goToMonth(interactor: Interactor<HTMLElement, any>, targetMonth: 
   if (currentMonth == targetMonth) return;
 
   const targetYear = currentYear;
-  let direction = directions.shift();
+  let directionStep = directions.shift();
   while (currentYear != targetYear || currentMonth != targetMonth) {
-    if (!direction)
+    if (!directionStep)
       throw new Error(
         `Can't set '${targetMonth}' month. It might happened because of 'minDate/maxDate' or 'disableFuture/disablePast' props`
       );
-    await direction();
+    await directionStep();
+    await delay(1000);
     const prevMonth = currentMonth;
     currentMonth = await getCurrentMonth(interactor);
     currentYear = await getCurrentYear(interactor);
-    if (currentYear != targetYear || currentMonth == prevMonth) direction = directions.shift();
+    if (currentYear != targetYear || currentMonth == prevMonth) directionStep = directions.shift();
   }
 }
-function goToDay(interactor: Interactor<HTMLElement, any>, day: number) {
+async function goToDay(interactor: Interactor<HTMLElement, any>, day: number) {
   // NOTE: We can't find day if user has custom day render
   const dayInteractor = interactor.find(HTML.selector(".MuiPickersCalendar-week > [role='presentation']")(String(day)));
   // TODO We need better message for that
-  // await dayInteractor.has({ className: not(including("MuiPickersDay-dayDisabled")) });
+  await dayInteractor.has({ className: not(including("MuiPickersDay-dayDisabled")) });
   // Instead of
   /*
       │ ╒═ Filter:   className
@@ -107,7 +113,6 @@ function goToDay(interactor: Interactor<HTMLElement, any>, day: number) {
   return dayInteractor.click();
 }
 
-// TODO How do you think, do we need some actions/filters from the HTML interactor?
 export const Calendar = createInteractor<HTMLElement>("MUI Calendar")
   .selector(".MuiPickersCalendar-transitionContainer")
   .locator((element) => {
