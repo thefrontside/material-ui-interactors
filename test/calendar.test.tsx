@@ -25,15 +25,9 @@ export default test("Calendar")
   .child("filter by weekDay", (test) =>
     test.step("render", renderComponent()).assertion(Calendar({ weekDay: "Mo" }).exists())
   )
-  // NOTE: Doesn't work
-  // │ ERROR did not find MUI Calendar with date "2014-08-18T00:00:00.000Z", did you mean one of:
-  // │
-  // │ ┃ date: "2014-08-18T00:00:00.000Z" ┃
-  // │ ┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
-  // │ ┃ ⨯ "2014-08-18T22:00:00.000Z"     ┃
-  // .child("filter by date", (test) =>
-  //   test.step("render", renderComponent()).assertion(CalendarWithUtils({ date: new Date("2014-08-18") }).exists())
-  // )
+  .child("filter by date", (test) =>
+    test.step("render", renderComponent()).assertion(CalendarWithUtils({ date: new Date("2014-08-18") }).exists())
+  )
   .child("nextMonth action", (test) =>
     test
       .step("render", renderComponent())

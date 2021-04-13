@@ -126,7 +126,11 @@ export const getCalendar = (utils: ReturnType<typeof useUtils>) =>
       const header = getTitleElement(element)?.innerText;
       const selectedDay = getSelectedElement(element)?.innerText;
       const monthAndYear = header ? utils.parse(header, "MMMM yyyy") : new Date();
-      return selectedDay ? utils.addDays(monthAndYear, parseInt(selectedDay)) : monthAndYear;
+      return new Date(
+        (selectedDay ? utils.addDays(monthAndYear, parseInt(selectedDay)) : monthAndYear)
+          ?.toISOString()
+          .replace(/T.*$/, "") ?? new Date()
+      );
     },
   }).actions({
     setMonth: async (interactor: Interactor<HTMLElement, any>, targetMonth: string) => {
