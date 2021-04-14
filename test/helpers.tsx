@@ -8,22 +8,27 @@ import { MuiPickersUtilsProvider } from "@material-ui/pickers";
 import DateFnsUtils from "@date-io/date-fns";
 
 export function render(element: ReactElement) {
-  let insertion = document.createComment("mui-jss-insertion");
-  let insertionPoint = document.head.insertBefore(insertion, document.head.firstChild);
-  const jss = create({
-    ...jssPreset(),
-    // Define a custom insertion point that JSS will look for when injecting the styles into the DOM.
-    insertionPoint,
-  });
+  return {
+    description: "render",
+    action: () => {
+      let insertion = document.createComment("mui-jss-insertion");
+      let insertionPoint = document.head.insertBefore(insertion, document.head.firstChild);
+      const jss = create({
+        ...jssPreset(),
+        // Define a custom insertion point that JSS will look for when injecting the styles into the DOM.
+        insertionPoint,
+      });
 
-  return rtlRender(
-    <StylesProvider jss={jss} injectFirst>
-      {element}
-    </StylesProvider>,
-    {
-      container: document.body,
-    }
-  );
+      rtlRender(
+        <StylesProvider jss={jss} injectFirst>
+          {element}
+        </StylesProvider>,
+        {
+          container: document.body,
+        }
+      );
+    },
+  };
 }
 
 type HTMLTypes<T> = T extends `HTML${infer C}Element` ? C : never;
@@ -44,7 +49,7 @@ export function getPickerRenderer<T extends ComponentType<any>>(PickerComponent:
     getProps?:
       | Partial<ComponentProps<typeof PickerComponent>>
       | ((onChange?: (date: Date) => void) => Partial<ComponentProps<typeof PickerComponent>>)
-  ) => () =>
+  ) =>
     render(
       createElement(() => {
         const props = typeof getProps == "function" ? getProps() : getProps;

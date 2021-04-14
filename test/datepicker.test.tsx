@@ -12,25 +12,25 @@ const actionTests = (props?: Partial<ComponentProps<typeof Component>>) => (
   test = test
     .child("setDay action", (test) =>
       test
-        .step("render", renderComponent(props))
+        .step(renderComponent(props))
         .step("set 21st day", () => DatePicker().setDay(21))
         .assertion(DatePicker().has({ value: "August 21st" }))
     )
     .child("setMonth action", (test) =>
       test
-        .step("render", renderComponent(props))
+        .step(renderComponent(props))
         .step("set September", () => DatePicker().setMonth("September"))
         .assertion(DatePicker().has({ value: "September 18th" }))
     )
     .child("setYear action", (test) =>
       test
-        .step("render", renderComponent({ ...props, format: "MM/dd/yyyy" }))
+        .step(renderComponent({ ...props, format: "MM/dd/yyyy" }))
         .step("set 2015", () => DatePicker().setYear(2015))
         .assertion(DatePicker().has({ value: "08/18/2015" }))
     )
     .child("setDate action", (test) =>
       test
-        .step("render", renderComponent({ ...props, format: "MM/dd/yyyy" }))
+        .step(renderComponent({ ...props, format: "MM/dd/yyyy" }))
         .step("set September 21th 2015", () => DatePicker().setDate({ day: 21, month: "September", year: 2015 }))
         .assertion(DatePicker().has({ value: "09/21/2015" }))
     );
@@ -39,13 +39,13 @@ const actionTests = (props?: Partial<ComponentProps<typeof Component>>) => (
     test = test
       .child("setToday action", (test) =>
         test
-          .step("render", renderComponent({ ...props, format: "yyyy-MM-dd", showTodayButton: true, todayLabel: "Now" }))
+          .step(renderComponent({ ...props, format: "yyyy-MM-dd", showTodayButton: true, todayLabel: "Now" }))
           .step("set today", () => DatePicker().setToday("Now"))
           .assertion(DatePicker().has({ value: new Date().toISOString().replace(/T.*$/, "") }))
       )
       .child("clear action", (test) =>
         test
-          .step("render", renderComponent({ ...props, clearable: true, clearLabel: "Empty" }))
+          .step(renderComponent({ ...props, clearable: true, clearLabel: "Empty" }))
           .step("clear", () => DatePicker().clear("Empty"))
           .assertion(DatePicker().has({ value: "" }))
       );
@@ -56,35 +56,27 @@ const actionTests = (props?: Partial<ComponentProps<typeof Component>>) => (
 
 export default test("DatePicker")
   .step(Page.visit("/"))
-  .child("filter by locator", (test) =>
-    test.step("render", renderComponent()).assertion(DatePicker("2014-08-18").exists())
-  )
+  .child("filter by locator", (test) => test.step(renderComponent()).assertion(DatePicker("2014-08-18").exists()))
   .child("filter by value", (test) =>
-    test.step("render", renderComponent()).assertion(DatePicker({ value: "August 18th" }).exists())
+    test.step(renderComponent()).assertion(DatePicker({ value: "August 18th" }).exists())
   )
   .child("filter by value with format", (test) =>
-    test
-      .step("render", renderComponent({ format: "MM/dd/yyyy" }))
-      .assertion(DatePicker({ value: "08/18/2014" }).exists())
+    test.step(renderComponent({ format: "MM/dd/yyyy" })).assertion(DatePicker({ value: "08/18/2014" }).exists())
   )
   .child("filter by valid", (test) =>
-    test.step("render", renderComponent({ value: "1234-56-78" })).assertion(DatePicker({ valid: false }).exists())
+    test.step(renderComponent({ value: "1234-56-78" })).assertion(DatePicker({ valid: false }).exists())
   )
   .child("filter by disabled", (test) =>
-    test.step("render", renderComponent({ disabled: true })).assertion(DatePicker({ disabled: true }).exists())
+    test.step(renderComponent({ disabled: true })).assertion(DatePicker({ disabled: true }).exists())
   )
   .child("filter by visible", (test) =>
-    test
-      .step("render", renderComponent({ style: { visibility: "hidden" } }))
-      .assertion(DatePicker({ visible: false }).exists())
+    test.step(renderComponent({ style: { visibility: "hidden" } })).assertion(DatePicker({ visible: false }).exists())
   )
   .child("filter by readOnly", (test) =>
-    test.step("render", renderComponent({ readOnly: true })).assertion(DatePicker({ readOnly: true }).exists())
+    test.step(renderComponent({ readOnly: true })).assertion(DatePicker({ readOnly: true }).exists())
   )
   .child("filter by format", (test) =>
-    test
-      .step("render", renderComponent({ format: "MM/dd/yyyy" }))
-      .assertion(DatePicker({ format: "MM/dd/yyyy" }).exists())
+    test.step(renderComponent({ format: "MM/dd/yyyy" })).assertion(DatePicker({ format: "MM/dd/yyyy" }).exists())
   )
   .child("default", actionTests())
   .child("orientation='landscape'", actionTests({ orientation: "landscape" }))

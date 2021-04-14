@@ -146,3 +146,5 @@ export const DatePicker = TextField.extend<HTMLInputElement>("MUI DatePicker")
 // export const StaticDatePicker = createInteractor<HTMLElement>("MUI StaticDatePicker").selector(
 //   ".MuiPickersStaticWrapper-staticWrapperRoot"
 // );
+
+export const NativeDatePicker = TextField.extend<HTMLInputElement>("MUI NativeDatePicker");
