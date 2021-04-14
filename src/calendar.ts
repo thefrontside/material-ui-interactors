@@ -29,6 +29,11 @@ function calendarLocator(element: HTMLElement) {
   return [selectedDay, header].filter(Boolean).join(" ");
 }
 
+export const getDay = (element: HTMLElement) => {
+  const text = getSelectedElement(element)?.innerText;
+  const day = text ? parseInt(text) : NaN;
+  return Number.isNaN(day) ? undefined : day;
+};
 export const getMonth = (element: HTMLElement) => getTitleElement(element)?.innerText.replace(/\s[0-9]{4}$/, "");
 export const getYear = (element: HTMLElement) => getTitleElement(element)?.innerText.replace(/.*\s([0-9]{4})$/, "$1");
 
@@ -154,11 +159,7 @@ export const Calendar = createInteractor<HTMLElement>("MUI Calendar")
   .filters({
     year: getYear,
     month: getMonth,
-    day: (element) => {
-      const text = getSelectedElement(element)?.innerText;
-      const day = text ? parseInt(text) : NaN;
-      return Number.isNaN(day) ? undefined : day;
-    },
+    day: getDay,
     title: (element) => getTitleElement(element)?.innerText,
     weekDay: (element) => {
       const rootDayElement = getSelectedElement(element)?.parentElement;
