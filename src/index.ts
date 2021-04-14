@@ -6,5 +6,6 @@ export { HTML, including, matching, and, or, not, some, every } from "@bigtest/i
 export * from "./checkbox";
 export * from "./body";
 export * from "./calendar";
+export * from "./datepicker";
 export { default as Fab } from "./fab";
 export { Button } from "@bigtest/interactor";
