@@ -1,24 +1,22 @@
 import { test, Page } from "bigtest";
 import { Body, Checkbox } from "../src/index";
 import { Checkbox as Component, FormControlLabel } from "@material-ui/core";
-import { render } from "./helpers";
+import { getComponentRenderer, render } from "./helpers";
+
+const renderComponent = getComponentRenderer(Component, {}, ({ props, children }) => (
+  <FormControlLabel label="locator" control={children(props)} />
+));
 
 export default test("Checkbox")
   .step(Page.visit("/"))
-  .child("test `filter` by locator", (test) =>
-    test
-      .step(render(<FormControlLabel label="locator" control={<Component />} />))
-      .assertion(Checkbox("locator").exists())
-  )
+  .child("test `filter` by locator", (test) => test.step(renderComponent()).assertion(Checkbox("locator").exists()))
   .child("test `filter` by checked", (test) =>
     test
       .step(render(<FormControlLabel label="checked" checked control={<Component />} />))
       .assertion(Checkbox({ checked: true }).exists())
   )
   .child("test `filter` by indeterminate", (test) =>
-    test
-      .step(render(<FormControlLabel label="indeterminate" control={<Component indeterminate />} />))
-      .assertion(Checkbox({ indeterminate: true }).exists())
+    test.step(renderComponent({ indeterminate: true })).assertion(Checkbox({ indeterminate: true }).exists())
   )
   .child("test `filter` by disabled", (test) =>
     test
@@ -30,7 +28,7 @@ export default test("Checkbox")
   )
   .child("test `click` action", (test) =>
     test
-      .step(render(<FormControlLabel label="checkbox" control={<Component />} />))
+      .step(renderComponent())
       .assertion(Checkbox().is({ checked: false, focused: false }))
       .child("click and assert", (test) =>
         test.step(Checkbox().click()).assertion(Checkbox().is({ checked: true, focused: true }))
@@ -38,25 +36,25 @@ export default test("Checkbox")
   )
   .child("test `focus` action", (test) =>
     test
-      .step(render(<FormControlLabel label="checkbox" control={<Component />} />))
+      .step(renderComponent())
       .assertion(Checkbox().is({ focused: false }))
       .child("focus and assert", (test) => test.step(Checkbox().focus()).assertion(Checkbox().is({ focused: true })))
   )
   .child("test `blur` action", (test) =>
     test
-      .step(render(<FormControlLabel label="checkbox" control={<Component autoFocus />} />))
+      .step(renderComponent({ autoFocus: true }))
       .assertion(Checkbox().is({ focused: true }))
       .child("blur and assert", (test) => test.step(Checkbox().blur()).assertion(Checkbox().is({ focused: false })))
   )
   .child("test `check` action", (test) =>
     test
-      .step(render(<FormControlLabel label="checkbox" control={<Component />} />))
+      .step(renderComponent())
       .assertion(Checkbox().is({ checked: false }))
       .child("check and assert", (test) => test.step(Checkbox().check()).assertion(Checkbox().is({ checked: true })))
   )
   .child("test `uncheck` action", (test) =>
     test
-      .step(render(<FormControlLabel label="checkbox" control={<Component defaultChecked />} />))
+      .step(renderComponent({ defaultChecked: true }))
       .assertion(Checkbox().is({ checked: true }))
       .child("uncheck and assert", (test) =>
         test.step(Checkbox().uncheck()).assertion(Checkbox().is({ checked: false }))
@@ -64,7 +62,7 @@ export default test("Checkbox")
   )
   .child("test `toggle` action", (test) =>
     test
-      .step(render(<FormControlLabel label="checkbox" control={<Component />} />))
+      .step(renderComponent())
       .assertion(Checkbox().is({ checked: false }))
       .child("toggle twice", (test) =>
         test
@@ -75,7 +73,7 @@ export default test("Checkbox")
   )
   .child("test click outside", (test) =>
     test
-      .step(render(<FormControlLabel label="checkbox" control={<Component autoFocus />} />))
+      .step(renderComponent({ autoFocus: true }))
       .step("click to the body", () => Body().click())
       .assertion(Checkbox().is({ focused: false }))
   );

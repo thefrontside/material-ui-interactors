@@ -9,14 +9,16 @@ const CalendarWithUtils = getCalendar(new DateFnsUtils());
 
 export default test("Calendar")
   .step(Page.visit("/"))
-  .child("filter by locator", (test) => test.step(renderComponent()).assertion(Calendar("18 August 2014").exists()))
-  .child("filter by title", (test) =>
-    test.step(renderComponent()).assertion(Calendar({ title: "August 2014" }).exists())
+  .child("filters", (test) =>
+    test
+      .step(renderComponent())
+      .assertion(Calendar("18 August 2014").exists())
+      .assertion(Calendar({ title: "August 2014" }).exists())
+      .assertion(Calendar({ month: "August" }).exists())
+      .assertion(Calendar({ year: "2014" }).exists())
+      .assertion(Calendar({ day: 18 }).exists())
+      .assertion(Calendar({ weekDay: "Mo" }).exists())
   )
-  .child("filter by month", (test) => test.step(renderComponent()).assertion(Calendar({ month: "August" }).exists()))
-  .child("filter by year", (test) => test.step(renderComponent()).assertion(Calendar({ year: "2014" }).exists()))
-  .child("filter by day", (test) => test.step(renderComponent()).assertion(Calendar({ day: 18 }).exists()))
-  .child("filter by weekDay", (test) => test.step(renderComponent()).assertion(Calendar({ weekDay: "Mo" }).exists()))
   // TODO Don't work well on different environments
   // .child("filter by date", (test) =>
   //   test.step(renderComponent()).assertion(CalendarWithUtils({ date: new Date("2014-08-18") }).exists())
