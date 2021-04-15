@@ -56,9 +56,11 @@ const actionTests = (props?: Partial<ComponentProps<typeof Component>>) => (
 
 export default test("DatePicker")
   .step(Page.visit("/"))
-  .child("filter by locator", (test) => test.step(renderComponent()).assertion(DatePicker("2014-08-18").exists()))
-  .child("filter by value", (test) =>
-    test.step(renderComponent()).assertion(DatePicker({ value: "August 18th" }).exists())
+  .child("filter by locator and value", (test) =>
+    test
+      .step(renderComponent())
+      .assertion(DatePicker("2014-08-18").exists())
+      .assertion(DatePicker({ value: "August 18th" }).exists())
   )
   .child("filter by value with format", (test) =>
     test.step(renderComponent({ format: "MM/dd/yyyy" })).assertion(DatePicker({ value: "08/18/2014" }).exists())
