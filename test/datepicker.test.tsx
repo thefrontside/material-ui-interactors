@@ -13,25 +13,25 @@ const actionTests = (props?: Partial<ComponentProps<typeof Component>>) => (
     .child("setDay action", (test) =>
       test
         .step(renderComponent(props))
-        .step("set 21st day", () => DatePicker().setDay(21))
+        .step(DatePicker().setDay(21))
         .assertion(DatePicker().has({ value: "August 21st" }))
     )
     .child("setMonth action", (test) =>
       test
         .step(renderComponent(props))
-        .step("set September", () => DatePicker().setMonth("September"))
+        .step(DatePicker().setMonth("September"))
         .assertion(DatePicker().has({ value: "September 18th" }))
     )
     .child("setYear action", (test) =>
       test
         .step(renderComponent({ ...props, format: "MM/dd/yyyy" }))
-        .step("set 2015", () => DatePicker().setYear(2015))
+        .step(DatePicker().setYear(2015))
         .assertion(DatePicker().has({ value: "08/18/2015" }))
     )
     .child("setDate action", (test) =>
       test
         .step(renderComponent({ ...props, format: "MM/dd/yyyy" }))
-        .step("set September 21th 2015", () => DatePicker().setDate({ day: 21, month: "September", year: 2015 }))
+        .step(DatePicker().setDate({ day: 21, month: "September", year: 2015 }))
         .assertion(DatePicker().has({ value: "09/21/2015" }))
     );
 
@@ -40,13 +40,13 @@ const actionTests = (props?: Partial<ComponentProps<typeof Component>>) => (
       .child("setToday action", (test) =>
         test
           .step(renderComponent({ ...props, format: "yyyy-MM-dd", showTodayButton: true, todayLabel: "Now" }))
-          .step("set today", () => DatePicker().setToday("Now"))
+          .step(DatePicker().setToday("Now"))
           .assertion(DatePicker().has({ value: new Date().toISOString().replace(/T.*$/, "") }))
       )
       .child("clear action", (test) =>
         test
           .step(renderComponent({ ...props, clearable: true, clearLabel: "Empty" }))
-          .step("clear", () => DatePicker().clear("Empty"))
+          .step(DatePicker().clear("Empty"))
           .assertion(DatePicker().has({ value: "" }))
       );
   }
