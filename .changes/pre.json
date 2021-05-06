@@ -1,6 +1,10 @@
 {
   "tag": "alpha",
   "changes": [
-    ".changes/start-v4.md"
+    ".changes/bottom-navigation.md",
+    ".changes/link.md",
+    ".changes/menu.md",
+    ".changes/start-v4.md",
+    ".changes/switch.md"
   ]
 }
