@@ -21,16 +21,16 @@ const SelectOptionsList = createInteractor<HTMLElement>("MUI OptionsList")
 
 async function closeSelectOptionsList(labelId: string) {
   await SelectOptionsList(labelId).perform((element) => {
-    let popover = element.parentElement?.parentElement;
+    const popover = element.parentElement?.parentElement;
     if (popover?.getAttribute("role") == "presentation" && popover.classList.contains("MuiPopover-root")) {
-      let popoverTrap = popover.firstElementChild;
+      const popoverTrap = popover.firstElementChild;
       if (isHTMLElement(popoverTrap)) popoverTrap.click();
     }
   });
 }
 
 function getValueText(element: HTMLInputElement) {
-  let select = element.previousElementSibling;
+  const select = element.previousElementSibling;
   return isHTMLElement(select) ? select.innerText : "";
 }
 
@@ -49,7 +49,7 @@ async function clearSelection(labelId: string) {
         .filter((option) => option.getAttribute("aria-selected") == "true")
         .map((option) => option.innerText))
   );
-  for (let option of selected) {
+  for (const option of selected) {
     await SelectOptionsList(labelId).find(Option(option)).choose();
   }
 }
@@ -58,7 +58,7 @@ async function openSelectOptionsList(interactor: Interactor<HTMLInputElement, an
   let labelId = "";
   await interactor.perform((element) => (labelId = getInputLabel(element)?.id ?? ""));
   await interactor.perform((element) => {
-    let select = element.previousElementSibling;
+    const select = element.previousElementSibling;
     if (isHTMLElement(select)) dispatchMouseDown(select);
   });
   await delay(100);
@@ -86,7 +86,7 @@ export const Select = BaseSelect.extend("MUI Select")
     choose: async (interactor, value: string) => {
       if ((await applyGetter(interactor, getValueText)) == value) return;
 
-      let labelId = await openSelectOptionsList(interactor);
+      const labelId = await openSelectOptionsList(interactor);
       await SelectOptionsList(labelId).find(Option(value)).choose();
     },
   });
@@ -95,30 +95,30 @@ export const MultiSelect = BaseSelect.extend("MUI MultiSelect")
   .filters({ values: getChipLabels })
   .actions({
     choose: async (interactor, value: string) => {
-      let selected = await applyGetter(interactor, getChipLabels);
+      const selected = await applyGetter(interactor, getChipLabels);
 
       if (selected.length == 1 && selected[0] == value) return;
 
-      let labelId = await openSelectOptionsList(interactor);
+      const labelId = await openSelectOptionsList(interactor);
       await clearSelection(labelId);
       await SelectOptionsList(labelId).find(Option(value)).choose();
       await closeSelectOptionsList(labelId);
     },
     select: async (interactor, value: string) => {
-      let selected = await applyGetter(interactor, getChipLabels);
+      const selected = await applyGetter(interactor, getChipLabels);
 
       if (selected.includes(value)) return;
 
-      let labelId = await openSelectOptionsList(interactor);
+      const labelId = await openSelectOptionsList(interactor);
       await SelectOptionsList(labelId).find(Option(value)).choose();
       await closeSelectOptionsList(labelId);
     },
     deselect: async (interactor, value: string) => {
-      let selected = await applyGetter(interactor, getChipLabels);
+      const selected = await applyGetter(interactor, getChipLabels);
 
       if (!selected.includes(value)) return;
 
-      let labelId = await openSelectOptionsList(interactor);
+      const labelId = await openSelectOptionsList(interactor);
       await SelectOptionsList(labelId).find(Option(value)).choose();
       await closeSelectOptionsList(labelId);
     },

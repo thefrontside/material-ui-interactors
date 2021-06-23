@@ -2,7 +2,7 @@ import { HTML } from "@bigtest/interactor";
 import { isHTMLElement } from "./helpers";
 
 function getLabelElement(root: HTMLElement) {
-  let label = root.querySelector("label.MuiFormLabel-root");
+  const label = root.querySelector("label.MuiFormLabel-root");
   return isHTMLElement(label) ? label : null;
 }
 
@@ -12,7 +12,7 @@ export const FormControl = HTML.extend("MUI Form Control")
   .filters({
     valid: (element) => !getLabelElement(element)?.classList.contains("Mui-error"),
     description: (element) => {
-      let descriptionElement = element?.lastElementChild;
+      const descriptionElement = element?.lastElementChild;
       return isHTMLElement(descriptionElement) ? descriptionElement.innerText : "";
     },
   });
