@@ -1,5 +1,10 @@
 # Changelog
 
+## \[4.0.0-alpha.3]
+
+- Update deps. Migrate from @bigtest/interactor to @interactors/html
+  - [2033117](https://github.com/thefrontside/material-ui-interactors/commit/20331176d9ec67f89bf8bdf979e23236e440ee85) update deps, use @interactors/html on 2021-08-31
+
 ## \[4.0.0-alpha.2]
 
 - Added interactor for [Button](https://material-ui.com/components/buttons/) component

@@ -17,6 +17,7 @@
     ".changes/start-v4.md",
     ".changes/switch.md",
     ".changes/tabs.md",
-    ".changes/textfield.md"
+    ".changes/textfield.md",
+    ".changes/update-deps.md"
   ]
 }
